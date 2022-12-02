@@ -48,9 +48,9 @@ defaultSalt = defaultSalt'
 
 defaultSalt' :: Salt
 #if WORD_SIZE_IN_BITS == 64
-defaultSalt' = -3750763034362895579 -- 14695981039346656037 :: Int64
+defaultSalt' = -2578643520546668380  -- 0xdc36d1615b7400a4
 #else
-defaultSalt' = -2128831035 -- 2166136261 :: Int32
+defaultSalt' = 0x087fc72c
 #endif
 {-# INLINE defaultSalt' #-}
 

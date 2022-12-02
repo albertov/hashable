@@ -76,6 +76,10 @@ import qualified Data.Text as T
 import qualified Data.Text.Array as TA
 import qualified Data.Text.Internal as T
 import qualified Data.Text.Lazy as TL
+import qualified Data.Text16 as T16
+import qualified Data.Text16.Array as TA16
+import qualified Data.Text16.Internal as T16
+import qualified Data.Text16.Lazy as TL16
 import Data.Version (Version(..))
 import Data.Word (Word8, Word16)
 import Foreign.Marshal.Utils (with)
@@ -726,36 +730,19 @@ instance Hashable BSI.ShortByteString where
         hashByteArrayWithSalt ba 0 (BSI.length sbs) (hashWithSalt salt (BSI.length sbs))
 #endif
 
-#if MIN_VERSION_text(2,0,0)
-
 instance Hashable T.Text where
-    hashWithSalt salt (T.Text (TA.ByteArray arr) off len) =
-        hashByteArrayWithSalt arr off len (hashWithSalt salt len)
+    hashWithSalt salt = hashWithSalt salt . T16.fromText2
 
 instance Hashable TL.Text where
-    hashWithSalt salt = finalise . TL.foldlChunks step (SP salt 0)
-      where
-        finalise (SP s l) = hashWithSalt s l
-        step (SP s l) (T.Text (TA.ByteArray arr) off len) = SP
-            (hashByteArrayWithSalt arr off len s)
-            (l + len)
+    hashWithSalt salt = hashWithSalt salt . TL16.fromText2
 
-#else
+instance Hashable T16.Text16 where
+    hashWithSalt salt (T16.Text16 arr off len) =
+        hashByteArrayWithSalt (TA16.aBA arr) (off `shiftL` 1) (len `shiftL` 1)
+        salt
 
-instance Hashable T.Text where
-    hashWithSalt salt (T.Text arr off len) =
-        hashByteArrayWithSalt (TA.aBA arr) (off `shiftL` 1) (len `shiftL` 1)
-        (hashWithSalt salt len)
-
-instance Hashable TL.Text where
-    hashWithSalt salt = finalise . TL.foldlChunks step (SP salt 0)
-      where
-        finalise (SP s l) = hashWithSalt s l
-        step (SP s l) (T.Text arr off len) = SP
-            (hashByteArrayWithSalt (TA.aBA arr) (off `shiftL` 1) (len `shiftL` 1) s)
-            (l + len)
-
-#endif
+instance Hashable TL16.Text16 where
+    hashWithSalt = TL16.foldlChunks hashWithSalt
 
 -- | Compute the hash of a ThreadId.
 hashThreadId :: ThreadId -> Int

@@ -4,12 +4,11 @@
 #include "MachDeps.h"
 #include <stdint.h>
 
+#define FNV_PRIME 16777619
 #if WORD_SIZE_IN_BITS == 64
-#define FNV_PRIME 1099511628211
 #define FNV_SIGNED int64_t
 #define FNV_UNSIGNED uint64_t
 #else
-#define FNV_PRIME 16777619
 #define FNV_SIGNED int32_t
 #define FNV_UNSIGNED uint32_t
 #endif
